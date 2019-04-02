@@ -1,5 +1,6 @@
 FROM golang:1.12.1 as builder
 
+RUN mkdir /app
 WORKDIR /app
 
 COPY go.mod .
@@ -9,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
+RUN CGO_ENABLED=0 GOOS=linux go build -o consignment-cli -a -installsuffix cgo cli.go
 
 FROM alpine:latest
 
@@ -19,8 +20,7 @@ RUN mkdir /app
 WORKDIR /app
 
 ADD consignment.json /app/consignment.json
-ADD consignment-cli /app/consignment-cli
 
-COPY --from=builder /go/src/github.com/gpng/grpc-tutorial/consignment-cli/consignment-cli .
+COPY --from=builder /app/consignment-cli .
 
 CMD ["./consignment-cli"]
